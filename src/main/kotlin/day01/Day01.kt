@@ -1,55 +1,58 @@
 package day01
 
 import readInput
+import kotlin.test.assertEquals
 
-fun common(line: String): Int {
+private fun common(line: String): Int {
     val digit1 = line.first { it.isDigit() }.digitToInt()
     val digit2 = line.last { it.isDigit() }.digitToInt()
 
     return digit1 * 10 + digit2
 }
 
-fun main() {
+private fun part1(lines: List<String>) = lines.sumOf { line -> common(line) }
 
-    fun part1(lines: List<String>) = lines.sumOf { line -> common(line) }
+private fun part2(lines: List<String>) = lines.sumOf { line ->
+    val numbers = mapOf(
+        "one" to 1,
+        "two" to 2,
+        "three" to 3,
+        "four" to 4,
+        "five" to 5,
+        "six" to 6,
+        "seven" to 7,
+        "eight" to 8,
+        "nine" to 9,
+    ).plus((1..9).map { it.toString() to it })
 
-    fun part2(lines: List<String>) = lines.sumOf { line ->
-        val numbers = mapOf(
-            "one" to 1,
-            "two" to 2,
-            "three" to 3,
-            "four" to 4,
-            "five" to 5,
-            "six" to 6,
-            "seven" to 7,
-            "eight" to 8,
-            "nine" to 9,
-        ).plus((1..9).map { it.toString() to it })
+    //ПЁСЕЛИ > КОТЕЛИ
 
-        //ПЁСЕЛИ > КОТЕЛИ
+    val first = numbers.mapNotNull { entry ->
+        line.indexOf(entry.key).takeIf { it >= 0 }?.let { it to entry }
+    }.minBy { it.first }
+        .second
+        .value
 
-        val first = numbers.mapNotNull { entry ->
-            line.indexOf(entry.key).takeIf { it >= 0 }?.let { it to entry }
-        }.minBy { it.first }
-            .second
-            .value
+    val reversedLine = line.reversed()
+    val last = numbers.mapNotNull { entry ->
+        reversedLine.indexOf(entry.key.reversed()).takeIf { it >= 0 }?.let { it to entry }
+    }.minBy { it.first }
+        .second
+        .value
 
-        val reversedLine = line.reversed()
-        val last = numbers.mapNotNull { entry ->
-            reversedLine.indexOf(entry.key.reversed()).takeIf { it >= 0 }?.let { it to entry }
-        }.minBy { it.first }
-            .second
-            .value
+    return@sumOf first * 10 + last
+}
 
-        return@sumOf first * 10 + last
-    }
+private fun main() {
+    assertEquals(part1(readInput("day01/day01_part1_test")), 142)
+    assertEquals(part2(readInput("day01/day01_part2_test")), 281)
 
-    val lines = readInput("day01")
+    val lines = readInput("day01/day01")
     println(part1(lines))
     println(part2(lines))
 }
 
-fun notWorking(line: String) {
+private fun notWorking(line: String) {
     val numbers = mapOf(
         "one" to 1,
         "two" to 2,
@@ -61,6 +64,7 @@ fun notWorking(line: String) {
         "eight" to 8,
         "nine" to 9,
     )
+
     fun format1(line: String) = buildString {
 
         val numbersGrouped = numbers.entries.groupBy { it.key.length }
