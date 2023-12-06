@@ -72,14 +72,14 @@ private fun notWorking(line: String) {
         var i = 0
         loop@
         while (i in line.indices) {
-            for (j in 3..5) {
-                if (i + j > line.length) break
-                val localNumbers = numbersGrouped.getValue(j)
+            for (len in 3..5) {
+                if (i + len > line.length) break
+                val localNumbers = numbersGrouped.getValue(len)
                 for ((number, digit) in localNumbers) {
-                    val substring = line.substring(i, i + j)
+                    val substring = line.substring(i, i + len)
                     if (substring.contains(number)) {
                         append(digit)
-                        i += j
+                        i += len
                         continue@loop
                     }
                 }
