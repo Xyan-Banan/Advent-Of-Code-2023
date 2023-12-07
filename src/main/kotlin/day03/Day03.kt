@@ -14,66 +14,12 @@ fun main() {
 }
 
 fun part1(lines: List<String>): Int {
-    var currentNumber: Int? = null
-    var coordinates: List<Coordinate>? = null
-    val numbers = mutableListOf<Number>()
-    val symbols = mutableListOf<Coordinate>()
-    for ((i, line) in lines.withIndex()) {
-        for ((j, char) in line.withIndex()) {
-            when {
-                char.isDigit() -> {
-                    currentNumber = (currentNumber ?: 0) * 10 + char.digitToInt()
-                    coordinates = (coordinates ?: emptyList()) + Coordinate(i, j)
-                }
-                else -> {
-                    if (currentNumber != null && coordinates != null) {
-                        numbers.add(Number(currentNumber, coordinates))
-                        currentNumber = null
-                        coordinates = null
-                    }
-
-                    if (char != '.') symbols.add(Coordinate(i, j))
-                }
-            }
-        }
-        if (currentNumber != null && coordinates != null) {
-            numbers.add(Number(currentNumber, coordinates))
-        }
-        currentNumber = null
-        coordinates = null
-    }
+    val (numbers,symbols) = collectNumbersAndOtherCoordinates(lines){char -> char != '.'}
     return numbers.sumOf { number -> if (number.coordinates isAdjacentTo symbols) number.value else 0 }
 }
 
 fun part2(lines: List<String>): Int {
-    var currentNumber: Int? = null
-    var coordinates: List<Coordinate>? = null
-    val numbers = mutableListOf<Number>()
-    val gears = mutableListOf<Coordinate>()
-    for ((i, line) in lines.withIndex()) {
-        for ((j, char) in line.withIndex()) {
-            when {
-                char.isDigit() -> {
-                    currentNumber = (currentNumber ?: 0) * 10 + char.digitToInt()
-                    coordinates = (coordinates ?: emptyList()) + Coordinate(i, j)
-                }
-                else -> {
-                    if (currentNumber != null && coordinates != null) {
-                        numbers.add(Number(currentNumber, coordinates))
-                        currentNumber = null
-                        coordinates = null
-                    }
-
-                    if (char == '*') gears.add(Coordinate(i, j))
-                }
-            }
-        }
-        if (currentNumber != null && coordinates != null) {
-            numbers.add(Number(currentNumber, coordinates))
-        }
-        currentNumber = null
-        coordinates = null
-    }
+    val (numbers, gears) = collectNumbersAndOtherCoordinates(lines) { char -> char == '*' }
     return gears.sumOf { gear ->
         val connections = numbers.filter { it.coordinates.any { it isAdjacentTo gear } }
         if (connections.size == 2) connections[0].value * connections[1].value else 0
@@ -86,3 +32,39 @@ data class Coordinate(val i: Int, val j: Int)
 private infix fun Coordinate.isAdjacentTo(other: Coordinate) = abs(i - other.i) <= 1 && abs(j - other.j) <= 1
 private infix fun List<Coordinate>.isAdjacentTo(other: List<Coordinate>) =
     any { coordinate -> other.any { otherCoordinate -> coordinate isAdjacentTo otherCoordinate } }
+
+
+private fun collectNumbersAndOtherCoordinates(
+    lines: List<String>,
+    otherPredicate: (Char) -> Boolean
+): Pair<List<Number>, List<Coordinate>> {
+    var currentNumber: Int? = null
+    var coordinates: List<Coordinate>? = null
+    val numbers = mutableListOf<Number>()
+    val other = mutableListOf<Coordinate>()
+    for ((i, line) in lines.withIndex()) {
+        for ((j, char) in line.withIndex()) {
+            when {
+                char.isDigit() -> {
+                    currentNumber = (currentNumber ?: 0) * 10 + char.digitToInt()
+                    coordinates = (coordinates ?: emptyList()) + Coordinate(i, j)
+                }
+                else -> {
+                    if (currentNumber != null && coordinates != null) {
+                        numbers.add(Number(currentNumber, coordinates))
+                        currentNumber = null
+                        coordinates = null
+                    }
+
+                    if (otherPredicate(char)) other.add(Coordinate(i, j))
+                }
+            }
+        }
+        if (currentNumber != null && coordinates != null) {
+            numbers.add(Number(currentNumber, coordinates))
+        }
+        currentNumber = null
+        coordinates = null
+    }
+    return numbers to other
+}
